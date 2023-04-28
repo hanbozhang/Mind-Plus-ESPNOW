@@ -1,0 +1,22 @@
+{
+    "WifiScan_AND_ESPNOW.Scan|block": "WIFI 开始 [IsAsync] 扫描",
+    "WifiScan_AND_ESPNOW.State|block": "Wifi 扫描状态 [SState]",
+    "WifiScan_AND_ESPNOW.Number|block": "WIFI 扫描数量",
+    "WifiScan_AND_ESPNOW.GetNumber|block": "WIFI 获取扫描数量",
+    "WifiScan_AND_ESPNOW.Information|block": "WIFI 第[Index]个[Net]信息",
+    "WifiScan_AND_ESPNOW.Delete_Info|block": "WIFI 删除扫描信息",
+    "WifiScan_AND_ESPNOW.ComCH|block": "WIFI 计算信道干扰",
+    "WifiScan_AND_ESPNOW.GetCH|block": "WIFI 获取[CHANNEL]干扰数",
+    "WifiScan_AND_ESPNOW.AsyncOrSync.0|menu": "同步",
+    "WifiScan_AND_ESPNOW.AsyncOrSync.1|menu": "异步",
+    "WifiScan_AND_ESPNOW.NetInfo.SSID|menu": "名称",
+    "WifiScan_AND_ESPNOW.NetInfo.RSSI|menu": "信号强度",
+    "WifiScan_AND_ESPNOW.NetInfo.IsOpen|menu": "是否开放",
+    "WifiScan_AND_ESPNOW.NetInfo.MAC|menu": "MAC HEX",
+    "WifiScan_AND_ESPNOW.NetInfo.MACStr|menu": "MAC 字符",
+    "WifiScan_AND_ESPNOW.NetInfo.Channel|menu": "信道",
+    "WifiScan_AND_ESPNOW.NetInfo.ALL|menu": "全部",
+    "WifiScan_AND_ESPNOW.ScanState.OK|menu": "完成",
+    "WifiScan_AND_ESPNOW.ScanState.Carry|menu": "进行中",
+    "WifiScan_AND_ESPNOW.ScanState.Not_Start|menu": "没有开始"
+}

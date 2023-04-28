@@ -1,0 +1,25 @@
+{
+	"name": {
+		"zh-cn": "WIFI扫描与ESPNOW通信",
+		"en": "WIFIScan_ESPNOW"
+	},
+	"description": {
+		"zh-cn": "基于ESP32与ESP8266开发板的WIFI扫描与ESPNOW扩展.",
+		"en": "WIFI scanning and ESPNOW extension based on ESP32 and ESP8266 development boards."
+	},
+	"author": "sydmdhm",
+	"email": "1580024574@qq.com",
+	"license": "MIT",
+	"isBoard": false,
+	"id": "WIFIScan_ESPNOW",
+	"platform": ["win", "mac", "web"],
+	"version": "0.0.3",
+	"asset": {
+		"arduinoC": {
+			"dir": "arduinoC/",
+			"version": "0.0.3",
+			"board": ["firebeetleesp32","firebeetleesp32e","esp8266","telloesp32"],
+			"main": "main.ts"
+		}
+	}
+}
