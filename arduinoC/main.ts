@@ -61,6 +61,7 @@ enum WifiChannel {
 }
 
 enum ESPNOW_Data_Type {
+
     //% block="Radio"
     1,
     //% block="RC"
@@ -71,6 +72,12 @@ enum ESPNOW_Data_Type {
     4,
     //% block="float"
     5
+}
+enum ESPNOW_Rece_Mac{
+    //% block="Object"
+    1,
+    //% block="String"
+    2
 }
 
 //% color="#00AAFF" iconWidth=50 iconHeight=40
@@ -211,6 +218,9 @@ namespace WifiScan_AND_ESPNOW {
             Generator.addInclude('Wifi32', '#include <WiFi.h>');
             Generator.addInclude('ESPNOW', '#include <esp_now.h>');
         }
+        Generator.addObject('RadioAddress', 'uint8_t', 'RadioAddress[]={0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};');
+        Generator.addObject('Rece_MAC_Str','char','MStr[11];')
+        Generator.addObject('Mac_To_Str', 'char*', 'MACTOCHAR(const uint8_t * mac)\r{\r   sprintf(MStr,"%X:%X:%X:%X:%X:%X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);\r   return MStr; \r}')
         Generator.addObject('ESPNOW_UNION_DATA', 'union', 'Data \r{\r   int n;\r   float f;\r   char c[32];\r} EspNow_SData,EspNow_RData;')
         Generator.addObject('ESPNOW_struct_message', 'typedef struct', 'struct_message \r{\r   char Type;\r   char Data[32];\r} struct_message;')
         Generator.addObject('ESPNOW_send_message', 'struct_message', 'ESPNOW_send_message')
@@ -238,7 +248,7 @@ namespace WifiScan_AND_ESPNOW {
         Generator.addSetup('ESPNOW_SetChannel', 'peerInfo.channel = ' + ch + ';')
         Generator.addSetup('ESPNOW_SetEncrypt', 'peerInfo.encrypt = false;')
         Generator.addSetup('ESPNOW_AddPeerInfo', 'ESPNOW_AddPeerState=esp_now_add_peer(&peerInfo);')
-        
+
     }
     //当消息发送时
     //% block="ESPNOW Send Event" blockType="hat"
@@ -253,30 +263,27 @@ namespace WifiScan_AND_ESPNOW {
     export function Send(parameter: any, block: any) {
         let data = parameter.DATA.code;
         let type = parameter.DTYPE.code;
-        Generator.addCode('ESPNOW_send_message.Type='+type+';');
-        if(data[0]=='"')
-        {
-            Generator.addCode('String('+data+').toCharArray(ESPNOW_send_message.Data, sizeof(ESPNOW_send_message.Data));');
+        Generator.addCode('ESPNOW_send_message.Type=' + type + ';');
+        if (data[0] == '"') {
+            Generator.addCode('String(' + data + ').toCharArray(ESPNOW_send_message.Data, sizeof(ESPNOW_send_message.Data));');
         }
-        else
-        {
-            switch(type)
-            {
+        else {
+            switch (type) {
                 case '3':
-                    Generator.addCode(data+'.toCharArray(ESPNOW_send_message.Data, sizeof(ESPNOW_send_message.Data));')
+                    Generator.addCode(data + '.toCharArray(ESPNOW_send_message.Data, sizeof(ESPNOW_send_message.Data));')
                     break;
                 case '4':
-                    Generator.addCode('int EspNow_Send_N=(int)'+data+';');
+                    Generator.addCode('int EspNow_Send_N=(int)' + data + ';');
                     Generator.addCode('memcpy(&ESPNOW_send_message.Data,&EspNow_Send_N,sizeof(EspNow_Send_N));')
                     break;
                 case '5':
-                    Generator.addCode('float EspNow_Send_F='+data+';');
+                    Generator.addCode('float EspNow_Send_F=' + data + ';');
                     Generator.addCode('memcpy(&ESPNOW_send_message.Data,&EspNow_Send_F,sizeof(EspNow_Send_F));')
                     break;
                 default:
-                    Generator.addCode('memcpy(&ESPNOW_send_message.Data,&'+data+',sizeof('+data+'));')
+                    Generator.addCode('memcpy(&ESPNOW_send_message.Data,&' + data + ',sizeof(' + data + '));')
                     break;
-            }  
+            }
         }
         Generator.addCode('esp_now_send(broadcastAddress, (uint8_t *) &ESPNOW_send_message, sizeof(ESPNOW_send_message));');
     }
@@ -288,20 +295,30 @@ namespace WifiScan_AND_ESPNOW {
         Generator.addCode('memcpy(&ESPNOW_recv_message, incomingData, sizeof(ESPNOW_recv_message));');
         Generator.addCode('memcpy(&EspNow_RData.c,&ESPNOW_recv_message.Data,32);');
     }
+    //MAC地址判断
+    //% block="ESPNOW MAC Address is broadcast" blockType="boolean"
+    export function IsMACType(parameter: any, block: any) {
+        Generator.addCode('(strcmp((char *)mac,(char *)&broadcastAddress)==0)');
+    }
     //消息类型
     //% block="ESPNOW Massage Type is [DTYPE]" blockType="boolean"
     //% DTYPE.shadow="dropdown" DTYPE.options="ESPNOW_Data_Type"
     export function IsDataType(parameter: any, block: any) {
         let dtype = parameter.DTYPE.code;
-        Generator.addCode('(ESPNOW_recv_message.Type==' + dtype+')');
+        Generator.addCode('(ESPNOW_recv_message.Type==' + dtype + ')');
     }
     //消息数据
     //% block="ESPNOW Massage [DTYPE]" blockType="reporter"
     //% DTYPE.shadow="dropdown" DTYPE.options="ESPNOW_Data_Type"
     export function ReceData(parameter: any, block: any) {
         let dtype = parameter.DTYPE.code;
-        switch(dtype)
-        {
+        switch (dtype) {
+            case '0':
+                Generator.addCode('mac');
+                break;
+            case '01':
+                Generator.addCode('MACTOCHAR(mac)');
+                break;
             case '4':
                 Generator.addCode('(EspNow_RData.n)')
                 break;
@@ -312,12 +329,23 @@ namespace WifiScan_AND_ESPNOW {
                 Generator.addCode('(EspNow_RData.c)')
                 break;
         }
-        
+    }
+    //消息来源MAC地址
+    //% block="ESPNOW Massage Mac Type[MACTYPE]" blockType="reporter"
+    //% MACTYPE.shadow="dropdown" MACTYPE.options="ESPNOW_Rece_Mac"
+    export function ReceMAC(parameter: any, block: any) {
+        let mactype = parameter.MACTYPE.code;
+        switch (mactype) {
+            case '1':
+                Generator.addCode('mac');
+                break;
+            case '2':
+                Generator.addCode('MACTOCHAR(mac)');
+        }
     }
     //广播地址
     //% block="ESPNOW Radio Address" blockType="reporter"
     export function RadioAddress(parameter: any, block: any) {
-        Generator.addObject('RadioAddress', 'uint8_t', 'RadioAddress[]={0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};');
         Generator.addCode('RadioAddress');
     }
 }
