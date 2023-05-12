@@ -7,6 +7,7 @@
     "WifiScan_AND_ESPNOW.Delete_Info|block": "WIFI 删除扫描信息",
     "WifiScan_AND_ESPNOW.ComCH|block": "WIFI 计算信道干扰",
     "WifiScan_AND_ESPNOW.GetCH|block": "WIFI 获取[CHANNEL]干扰数",
+    "WifiScan_AND_ESPNOW.GetMAC|block":"WIFI 获取MAC地址[MACTYPE]",
     "WifiScan_AND_ESPNOW.Begin|block": "ESPNOW 初始化 MAC地址:[ADDR] 信道:[CHANNEL]",
     "WifiScan_AND_ESPNOW.SendEvent|block": "ESPNOW 消息发送时",
     "WifiScan_AND_ESPNOW.Send|block": "ESPNOW 发送类型为[DTYPE]的数据[DATA]",
@@ -33,6 +34,6 @@
     "WifiScan_AND_ESPNOW.ESPNOW_Data_Type.3|menu":"字符串",
     "WifiScan_AND_ESPNOW.ESPNOW_Data_Type.4|menu":"整数",
     "WifiScan_AND_ESPNOW.ESPNOW_Data_Type.5|menu":"浮点数",
-    "WifiScan_AND_ESPNOW.ESPNOW_Rece_Mac.1|menu":"原始",
-    "WifiScan_AND_ESPNOW.ESPNOW_Rece_Mac.2|menu":"字符串"
+    "WifiScan_AND_ESPNOW.MAC_TYPE.1|menu":"原始",
+    "WifiScan_AND_ESPNOW.MAC_TYPE.2|menu":"字符串"
 }

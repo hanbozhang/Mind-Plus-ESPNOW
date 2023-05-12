@@ -73,7 +73,7 @@ enum ESPNOW_Data_Type {
     //% block="float"
     5
 }
-enum ESPNOW_Rece_Mac{
+enum MAC_TYPE{
     //% block="Object"
     1,
     //% block="String"
@@ -198,9 +198,28 @@ namespace WifiScan_AND_ESPNOW {
         Generator.addCode('chs[int(' + ch + ')-1]');
     }
     //获取MAC地址
-    //% block="Wifi get MAC" blockType="reporter"
+    //% block="Wifi get MAC[MACTYPE]" blockType="reporter"
+    //% MACTYPE.shadow="dropdown" MACTYPE.options="MAC_TYPE"
     export function GetMAC(parameter: any, block: any) {
-        Generator.addCode('WiFi.macAddress()');
+        let mactype = parameter.MACTYPE.code;
+        if (Generator.board == 'esp8266') {
+            Generator.addInclude('Wifi8266', '#include <ESP8266WiFi.h>');
+        }
+        else {
+            Generator.addInclude('Wifi32', '#include <WiFi.h>');
+        }
+        Generator.addSetup('Wifi_Set_STA', 'WiFi.mode(WIFI_STA);');
+        Generator.addSetup('Wifi_Dis_Net', 'WiFi.disconnect();');
+        Generator.addObject('MyStaMac', 'uint8_t', 'MyStaMac[6];');
+        Generator.addSetup('GetMyStaMac', 'WiFi.macAddress(MyStaMac);');
+        switch (mactype) {
+            case '1':
+                Generator.addCode('MyStaMac');
+                break;
+            case '2':
+                Generator.addCode('WiFi.macAddress()');
+        }
+        
     }
 
     //初始化ESPNOW
@@ -332,7 +351,7 @@ namespace WifiScan_AND_ESPNOW {
     }
     //消息来源MAC地址
     //% block="ESPNOW Massage Mac Type[MACTYPE]" blockType="reporter"
-    //% MACTYPE.shadow="dropdown" MACTYPE.options="ESPNOW_Rece_Mac"
+    //% MACTYPE.shadow="dropdown" MACTYPE.options="MAC_TYPE"
     export function ReceMAC(parameter: any, block: any) {
         let mactype = parameter.MACTYPE.code;
         switch (mactype) {
