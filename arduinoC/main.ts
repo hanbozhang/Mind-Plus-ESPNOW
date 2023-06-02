@@ -80,6 +80,33 @@ enum MAC_TYPE{
     2
 }
 
+enum RC_TYPE{
+    //% block="ACH1"
+    1,
+    //% block="ACH2"
+    2,
+    //% block="ACH3"
+    3,
+    //% block="ACH4"
+    4,
+    //% block="DCH1"
+    5,
+    //% block="DCH2"
+    6,
+    //% block="DCH3"
+    7,
+    //% block="DCH4"
+    8,
+    //% block="DCH5"
+    9,
+    //% block="DCH6"
+    10,
+    //% block="DCH7"
+    11,
+    //% block="DCH8"
+    12
+}
+
 //% color="#00AAFF" iconWidth=50 iconHeight=40
 namespace WifiScan_AND_ESPNOW {
     //扫描WIFI
@@ -275,6 +302,67 @@ namespace WifiScan_AND_ESPNOW {
         Generator.addSetup('ESPNOW_Send_Event', 'esp_now_register_send_cb(OnDataSend);')
         Generator.addEvent("ESPNOW_Send_Event", "void", "OnDataSend", "const uint8_t *mac_addr, esp_now_send_status_t status");
     }
+    //遥控数据填充
+    //% block="Remote control data ACH1:[DACH1] ACH2:[DACH2] ACH3:[DACH3] ACH4:[DACH4] DCH:[DCH]" blockType="command"
+    //% DACH1.shadow="number"
+    //% DACH2.shadow="number"
+    //% DACH3.shadow="number"
+    //% DACH4.shadow="number"
+    //% DCH.shadow="normal"
+    export function RemoteData_Input(parameter: any, block: any) {
+        let dach1 = parameter.DACH1.code;
+        let dach2 = parameter.DACH2.code;
+        let dach3 = parameter.DACH3.code;
+        let dach4 = parameter.DACH4.code;
+        let dch = parameter.DCH.code;
+        Generator.addObject('STRUCT_REMOTEDATA', 'typedef struct', '\r{\r   int DACH1;\r   int DACH2;\r   int DACH3;\r   int DACH4;\r   char DCH[8];\r} struct_RemoteData;')
+        Generator.addObject('REMOTEDATA', 'struct_RemoteData','RemoteData;')
+        Generator.addCode('RemoteData.DACH1=' + dach1 + ';');
+        Generator.addCode('RemoteData.DACH2=' + dach2 + ';');
+        Generator.addCode('RemoteData.DACH3=' + dach3 + ';');
+        Generator.addCode('RemoteData.DACH4=' + dach4 + ';');
+        if(dch!='')
+        {
+            Generator.addCode('strcpy(RemoteData.DCH,'+dch+'.c_str());');
+            //Generator.addCode('memcpy(&RemoteData.DCH,'+dch+'.c_str,8);');
+        }
+        
+    }
+    //遥控数据
+    //% block="Remote Data" blockType="reporter"
+    export function RemoteData(parameter: any, block: any) {
+        Generator.addObject('STRUCT_REMOTEDATA', 'typedef struct', '\r{\r   int DACH1;\r   int DACH2;\r   int DACH3;\r   int DACH4;\r   char DCH[8];\r} struct_RemoteData;')
+        Generator.addObject('REMOTEDATA', 'struct_RemoteData','RemoteData;')
+        Generator.addCode('RemoteData');
+    }
+    //获取遥控数据
+    //% block="Get Remote Data [RCTYPE]" blockType="reporter"
+    //% RCTYPE.shadow="dropdownRound" RCTYPE.options="RC_TYPE"
+    export function RemoteData_Print(parameter: any, block: any) {
+        let rctype = parameter.RCTYPE.code;
+        Generator.addObject('STRUCT_REMOTEDATA', 'typedef struct', '\r{\r   int DACH1;\r   int DACH2;\r   int DACH3;\r   int DACH4;\r   char DCH[8];\r} struct_RemoteData;')
+        Generator.addObject('REMOTEDATA', 'struct_RemoteData','RemoteData;')
+        switch(rctype){
+            case '1':
+                Generator.addCode('RemoteData.DACH1');
+                break
+            case '2':
+                Generator.addCode('RemoteData.DACH2');
+                break;
+            case '3':
+                Generator.addCode('RemoteData.DACH3');
+                break;
+            case '4':
+                Generator.addCode('RemoteData.DACH4');
+                break;
+            default:
+                Generator.addCode('RemoteData.DCH['+(parseInt(String(rctype), 10)-5)+']');
+                break;
+        }
+        
+
+        
+    }
     //发送消息
     //% block="ESPNOW Send Type:[DTYPE] Data:[DATA]" blockType="command"
     //% DATA.shadow="normal"
@@ -313,11 +401,14 @@ namespace WifiScan_AND_ESPNOW {
         Generator.addEvent("ESPNOW_Recv_Event", "void", "OnDataRecv", "const uint8_t * mac, const uint8_t *incomingData, int len");
         Generator.addCode('memcpy(&ESPNOW_recv_message, incomingData, sizeof(ESPNOW_recv_message));');
         Generator.addCode('memcpy(&EspNow_RData.c,&ESPNOW_recv_message.Data,32);');
+        Generator.addObject('STRUCT_REMOTEDATA', 'typedef struct', '\r{\r   int DACH1;\r   int DACH2;\r   int DACH3;\r   int DACH4;\r   char DCH[8];\r} struct_RemoteData;')
+        Generator.addObject('REMOTEDATA', 'struct_RemoteData','RemoteData;')
+        Generator.addCode('if(ESPNOW_recv_message.Type==2){memcpy(&RemoteData,&ESPNOW_recv_message.Data,24);}');
     }
     //MAC地址判断
     //% block="ESPNOW MAC Address is broadcast" blockType="boolean"
     export function IsMACType(parameter: any, block: any) {
-        Generator.addCode('(strcmp((char *)mac,(char *)&broadcastAddress)==0)');
+        Generator.addCode('(memcmp(mac,&broadcastAddress,6)==0)');
     }
     //消息类型
     //% block="ESPNOW Massage Type is [DTYPE]" blockType="boolean"
